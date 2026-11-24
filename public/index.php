@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php include __DIR__ . '/inc/head-extra.php'; ?>
+<?php $section_icon = 'home'; include __DIR__ . '/inc/head-extra.php'; ?>
 <title>Agnès Aran — No puc estar quieta</title>
 <meta name="description" content="Agnès Aran: assessora de lactància, veu (locucions, jingles i música) i cuina de casa. Barcelona.">
 <link rel="canonical" href="<?= e($cfg['site_url']) ?>/">
