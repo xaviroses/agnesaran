@@ -70,7 +70,9 @@ g.innerHTML='';
 if(!n)return;
 var W=window.innerWidth||1280,H=Math.max((window.innerHeight||800)-184,300);
 var cols=Math.min(n,Math.max(1,Math.round(Math.sqrt(n*(W/H)/(16/9)))));
-var rows=Math.ceil(n/cols);
+var rows=Math.ceil(n/cols),spare=rows*cols-n;
+// Sense filtre, l'últim vídeo pot ocupar fins a 2 columnes; filtrat, sempre 1. La resta de caselles, en rosa.
+var span=Math.min(spare+1,sel?1:2);
 g.style.gridTemplateColumns='repeat('+cols+',minmax(0,1fr))';
 g.style.gridTemplateRows='repeat('+rows+',minmax(0,1fr))';
 list.forEach(function(v,i){
@@ -78,11 +80,12 @@ var a=document.createElement('a');a.href=v[2];a.target='_blank';a.rel='noopener'
 a.setAttribute('aria-label',v[1]);if(v[1])a.title=v[1];
 var fosc=!((i+Math.floor(i/cols))%2);
 a.style.background=fosc?'#EBA096':'#F2AFA5';
+if(i===n-1&&span>1)a.style.gridColumn='span '+span;
 if(v[3]&&v[3].length){a.className='thumb';a._t=v[3]}
 a.innerHTML='<span>'+icon+'</span>';g.appendChild(a);
 });
 // Les caselles que sobren a l'última fila es queden buides, en rosa (seguint l'arlequinat)
-for(var i=n;i<rows*cols;i++){var d=document.createElement('div');d.setAttribute('aria-hidden','true');d.style.background=((i+Math.floor(i/cols))%2)?'#F2AFA5':'#EBA096';g.appendChild(d)}
+for(var i=n+span-1;i<rows*cols;i++){var d=document.createElement('div');d.setAttribute('aria-hidden','true');d.style.background=((i+Math.floor(i/cols))%2)?'#F2AFA5':'#EBA096';g.appendChild(d)}
 // Cada miniatura porta franges; t = [url, amplada, alçada, zona amb imatge [esq, dalt, dreta, baix]].
 // S'amplia perquè la zona amb imatge cobreixi tota la casella, i si la petita quedaria pixelada es fa servir la gran.
 var dpr=window.devicePixelRatio||1;
