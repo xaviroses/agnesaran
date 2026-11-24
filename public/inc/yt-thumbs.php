@@ -38,34 +38,45 @@ function yt_content_box($im): array
         $c = imagecolorat($im, $x, $y);
         return [($c >> 16) & 255, ($c >> 8) & 255, $c & 255];
     };
-    // Una línia és "franja" si tots els seus píxels són gairebé del mateix color
+    // Una línia és "franja" si gairebé tots els seus píxels (≥ 90%) són del mateix color:
+    // així també es detecten les franges negres amb una línia de subtítols o text petit
     $uniform = function (callable $get, int $from, int $to): bool {
-        $vals = [];
+        $buckets = [];
+        $n = 0;
         for ($i = $from; $i < $to; $i += 2) {
-            $vals[] = $get($i);
+            [$r, $g, $b] = $get($i);
+            $key = ($r >> 5) . '-' . ($g >> 5) . '-' . ($b >> 5);
+            $buckets[$key] = ($buckets[$key] ?? 0) + 1;
+            $n++;
         }
-        $avg = [0, 0, 0];
-        foreach ($vals as $c) {
-            for ($k = 0; $k < 3; $k++) {
-                $avg[$k] += $c[$k] / count($vals);
+        return $n > 0 && max($buckets) >= 0.9 * $n;
+    };
+    // Gruix d'una franja des d'una vora: arriba fins a l'última línia uniforme sempre que
+    // la majoria (≥ 75%) de les línies fins allà ho siguin (així no l'atura una línia de text)
+    $edge = function (callable $isBar, int $limit): int {
+        $best = 0;
+        $bars = 0;
+        for ($k = 0; $k < $limit; $k++) {
+            if ($isBar($k)) {
+                $bars++;
+                if ($bars >= 0.75 * ($k + 1)) {
+                    $best = $k + 1;
+                }
             }
         }
-        foreach ($vals as $c) {
-            if (abs($c[0] - $avg[0]) + abs($c[1] - $avg[1]) + abs($c[2] - $avg[2]) >= 40) {
-                return false;
-            }
-        }
-        return true;
+        return $best;
     };
     // Passades successives: si hi ha franges negres a dalt i grises als costats, primer
     // es treuen unes i després les altres (comprovant només la zona que queda)
     [$l, $t, $r, $b] = [0, 0, $w - 1, $h - 1];
+    $maxH = (int) ($h * 0.28);
+    $maxW = (int) ($w * 0.28);
     do {
         $prev = [$l, $t, $r, $b];
-        while ($t < $h / 2 && $uniform(fn($i) => $px($i, $t), $l, $r + 1)) $t++;
-        while ($b > $h / 2 && $uniform(fn($i) => $px($i, $b), $l, $r + 1)) $b--;
-        while ($l < $w / 2 && $uniform(fn($i) => $px($l, $i), $t, $b + 1)) $l++;
-        while ($r > $w / 2 && $uniform(fn($i) => $px($r, $i), $t, $b + 1)) $r--;
+        $t += $edge(fn($k) => $uniform(fn($i) => $px($i, $t + $k), $l, $r + 1), max(0, $maxH - $t));
+        $b -= $edge(fn($k) => $uniform(fn($i) => $px($i, $b - $k), $l, $r + 1), max(0, $maxH - ($h - 1 - $b)));
+        $l += $edge(fn($k) => $uniform(fn($i) => $px($l + $k, $i), $t, $b + 1), max(0, $maxW - $l));
+        $r -= $edge(fn($k) => $uniform(fn($i) => $px($r - $k, $i), $t, $b + 1), max(0, $maxW - ($w - 1 - $r)));
     } while ($prev !== [$l, $t, $r, $b]);
     $box = [$l, $t, $r + 1, $b + 1];
     // Si queda massa petit (imatge gairebé llisa), millor no retallar-la tant

@@ -44,11 +44,7 @@ nav{flex:none;display:flex;justify-content:center;padding:24px 16px}
 #graella a{min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;text-decoration:none;color:#A3483D}
 #graella a{position:relative;overflow:hidden}
 #graella a.thumb::before{content:"";position:absolute;inset:0;background:var(--img) var(--bp,center)/var(--bs,cover) no-repeat;transition:transform .4s}
-/* Capa negra molt subtil en escacs (com l'arlequinat de colors de les caselles buides) */
-#graella a.thumb::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.14);transition:background .3s}
-#graella a.thumb.fosc::after{background:rgba(0,0,0,.24)}
 #graella a.thumb:hover::before,#graella a.thumb:focus-visible::before{transform:scale(1.04)}
-#graella a.thumb:hover::after,#graella a.thumb:focus-visible::after{background:rgba(0,0,0,.04)}
 #graella a.thumb span{position:relative;z-index:1;filter:drop-shadow(0 1px 4px rgba(0,0,0,.45))}
 #graella a.thumb svg{stroke:#fff;stroke-width:1}
 #graella a span{display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px;transition:transform .2s}
@@ -87,12 +83,15 @@ a.setAttribute('aria-label',v[1]);if(v[1])a.title=v[1];
 var fosc=!((i+Math.floor(i/cols))%2);
 a.style.background=fosc?'#EBA096':'#F2AFA5';
 if(i===n-1&&spare>0)a.style.gridColumn='span '+(spare+1);
-if(v[3]){a.className='thumb'+(fosc?' fosc':'');a.style.setProperty('--img','url("'+v[3]+'")');a._crop=v[4]}
+if(v[3]){a.className='thumb';a.style.setProperty('--img','url("'+v[3]+'")');a._crop=v[4]}
 a.innerHTML='<span>'+icon+'</span>';g.appendChild(a);
 });
 // La miniatura (480×360) porta franges; c = zona amb imatge [esq, dalt, dreta, baix]: s'amplia perquè aquesta zona cobreixi tota la casella
 g.querySelectorAll('a.thumb').forEach(function(a){
-var c=a._crop||[0,45,480,315],w=a.offsetWidth,h=a.offsetHeight,cw=c[2]-c[0],ch=c[3]-c[1];
+// Marge de seguretat: la vora de les franges és borrosa (JPEG); on n'hi havia, se'n treuen uns píxels més
+var c=(a._crop||[0,45,480,315]).slice(),m=3,e=6;
+c[0]+=m+(c[0]>0?e:0);c[1]+=m+(c[1]>0?e:0);c[2]-=m+(c[2]<480?e:0);c[3]-=m+(c[3]<360?e:0);
+var w=a.offsetWidth,h=a.offsetHeight,cw=c[2]-c[0],ch=c[3]-c[1];
 var k=Math.max(w/cw,h/ch),x=c[0]*k-(w-cw*k)/2,y=c[1]*k-(h-ch*k)/2;
 a.style.setProperty('--bs',Math.ceil(480*k)+'px '+Math.ceil(360*k)+'px');
 a.style.setProperty('--bp',(-x).toFixed(1)+'px '+(-y).toFixed(1)+'px');
