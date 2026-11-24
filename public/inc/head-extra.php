@@ -7,7 +7,7 @@ if ($cookieyes !== ''): ?>
 <!-- End cookieyes banner -->
 <?php endif; ?>
 <?php
-$v = '4'; // canvia-ho quan es canviï el favicon perquè els navegadors no facin servir la còpia antiga
+$v = '5'; // canvia-ho quan es canviï el favicon perquè els navegadors no facin servir la còpia antiga
 // Cada apartat (cuina, veu, lactancia) té la seva icona, com als artifacts; la portada, el favicon general
 $ico = $section_icon ?? null;
 if ($ico): ?>
