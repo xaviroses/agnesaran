@@ -11,7 +11,10 @@ foreach (sheet_rows('videos') as $r) {
     if (!$cat || !preg_match('~^https?://~', $url)) {
         continue;
     }
-    $videos[] = [$cat, $r['titol'] ?? '', $url];
+    // Miniatura de YouTube (si l'enllaç és de YouTube): i.ytimg.com no posa galetes
+    $thumb = preg_match('~(?:youtu\.be/|[?&]v=|/(?:embed|shorts|live)/)([\w-]{11})~', $url, $m)
+        ? "https://i.ytimg.com/vi/{$m[1]}/hqdefault.jpg" : '';
+    $videos[] = [$cat, $r['titol'] ?? '', $url, $thumb];
 }
 ?><!doctype html>
 <html lang="ca">
@@ -34,6 +37,13 @@ nav{flex:none;display:flex;justify-content:center;padding:24px 16px}
 .filtres button[aria-pressed="true"]{background:#A3483D;color:#fff}
 #graella{flex:1;min-height:0;display:grid;gap:0}
 #graella a{min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;text-decoration:none;color:#A3483D}
+#graella a{position:relative;overflow:hidden}
+#graella a.thumb::before{content:"";position:absolute;inset:0;background:var(--img) center/var(--bs,cover) no-repeat;transition:transform .4s}
+#graella a.thumb::after{content:"";position:absolute;inset:0;background:rgba(163,72,61,.25);transition:background .3s}
+#graella a.thumb:hover::before,#graella a.thumb:focus-visible::before{transform:scale(1.04)}
+#graella a.thumb:hover::after,#graella a.thumb:focus-visible::after{background:rgba(163,72,61,.05)}
+#graella a.thumb span{position:relative;z-index:1;filter:drop-shadow(0 1px 4px rgba(0,0,0,.45))}
+#graella a.thumb svg{stroke:#fff;stroke-width:1}
 #graella a span{display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px;transition:transform .2s}
 #graella a:hover span,#graella a:focus-visible span{transform:scale(1.12)}
 footer{flex:none;display:flex;justify-content:center;padding:24px 16px}
@@ -69,8 +79,11 @@ var a=document.createElement('a');a.href=v[2];a.target='_blank';a.rel='noopener'
 a.setAttribute('aria-label',v[1]);if(v[1])a.title=v[1];
 a.style.background=((i+Math.floor(i/cols))%2)?'#F2AFA5':'#EBA096';
 if(i===n-1&&spare>0)a.style.gridColumn='span '+(spare+1);
+if(v[3]){a.className='thumb';a.style.setProperty('--img','url("'+v[3]+'")')}
 a.innerHTML='<span>'+icon+'</span>';g.appendChild(a);
 });
+// hqdefault és 4:3 amb franges negres a dalt i a baix: la mida fa que el 16:9 del mig cobreixi la casella
+g.querySelectorAll('a.thumb').forEach(function(a){var w=a.offsetWidth,h=a.offsetHeight;a.style.setProperty('--bs',Math.ceil(Math.max(w,h*16/9))+'px auto')});
 document.querySelectorAll('.filtres button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.cat===sel))});
 }
 document.querySelectorAll('.filtres button').forEach(function(b){b.addEventListener('click',function(){sel=sel===b.dataset.cat?null:b.dataset.cat;render()})});
