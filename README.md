@@ -52,7 +52,6 @@ public/                  plantilles i recursos (també funciona tal qual en un h
   assets/                CSS, JS, imatges
 build.php                genera dist/ (HTML estàtic + sitemap + 404)
 google-apps-script/      script del full que avisa GitHub dels canvis
-deploy.sh                pujada per SSH a un hosting amb PHP (staging a IONOS)
 ```
 
 ## Contingut editable (Google Sheet)
@@ -94,9 +93,11 @@ El full ha d'estar compartit com "Qualsevol persona amb l'enllaç: lector".
 
 ## Pendent
 
-- [ ] Activar GitHub Pages i fer el primer build
-- [ ] Instal·lar l'Apps Script al full, amb el token
-- [ ] DNS a cdmon cap a GitHub i domini verificat; HTTPS
+- [x] Activar GitHub Pages i fer el primer build
+- [x] DNS a cdmon (4 A, CNAME www, TXT de verificació); domini agnesaran.com a Pages; HTTPS forçat
+- [x] Instal·lar l'Apps Script al full, amb el token
+- [ ] Verificar el domini al compte de GitHub i que funcioni www (cdmon encara no publica el CNAME ni el TXT)
+- [ ] Desactivar "No renovar dominio" a cdmon (caduca el 23/11/2027)
 - [ ] Transferir la propietat del Google Sheet a l'Agnès
 - [ ] Allotjar les fonts a la web (ara venen de Google Fonts)
 - [ ] Textos legals (avís legal, privacitat, cookies, en CA/ES/EN) i bàner de cookies
