@@ -1,33 +1,47 @@
 <?php
 /**
- * Miniatures de YouTube: les "hqdefault" (480×360) porten franges (negres o de color) que
- * varien segons el vídeo. Es descarrega cada miniatura, es detecten les vores uniformes i
- * es retorna el rectangle amb contingut [esquerra, dalt, dreta, baix] en píxels.
- * Es desa a cache/yt-crop.json perquè no calgui tornar-ho a calcular.
+ * Miniatures de YouTube. Totes porten franges (negres o de color) que varien segons el vídeo.
+ * Per a cada vídeo es descarreguen la miniatura petita (hqdefault, 480×360) i, si existeix,
+ * una de gran (maxresdefault 1280×720 o sddefault 640×480); es detecten les vores uniformes
+ * i es retorna, per a cada mida: [url, amplada, alçada, [esquerra, dalt, dreta, baix]].
+ * La pàgina tria la petita o la gran segons la mida de la casella.
+ * Es desa a cache/yt-thumbs.json perquè no calgui tornar-ho a calcular.
  */
-const YT_DEFAULT_CROP = [0, 45, 480, 315]; // 16:9 dins del 4:3: el cas més habitual
 
-function yt_crop(string $id): array
+function yt_thumbs(string $id): array
 {
     static $cache = null;
-    $file = dirname(__DIR__) . '/cache/yt-crop.json';
+    $file = dirname(__DIR__) . '/cache/yt-thumbs.json';
     if ($cache === null) {
         $cache = is_file($file) ? (json_decode((string) file_get_contents($file), true) ?: []) : [];
     }
     if (isset($cache[$id])) {
         return $cache[$id];
     }
-    $crop = YT_DEFAULT_CROP;
-    $jpg = function_exists('imagecreatefromstring') ? http_get("https://i.ytimg.com/vi/$id/hqdefault.jpg") : null;
-    $im = $jpg ? @imagecreatefromstring($jpg) : false;
-    if (!$im) {
-        return $crop; // sense xarxa o sense GD: no es desa, es tornarà a provar
+    $out = [];
+    $ok = true;
+    foreach ([['hqdefault'], ['maxresdefault', 'sddefault']] as $names) {
+        foreach ($names as $name) {
+            $url = "https://i.ytimg.com/vi/$id/$name.jpg";
+            $jpg = function_exists('imagecreatefromstring') ? http_get($url) : null;
+            $im = $jpg ? @imagecreatefromstring($jpg) : false;
+            if ($im && imagesx($im) > 120) { // 120×90 = "no hi ha miniatura"
+                $out[] = [$url, imagesx($im), imagesy($im), yt_content_box($im)];
+                break;
+            }
+            if ($name === 'hqdefault') {
+                $ok = false; // sense xarxa o sense GD
+            }
+        }
     }
-    $crop = yt_content_box($im);
-    $cache[$id] = $crop;
+    if (!$ok) {
+        // No es desa: es tornarà a provar. Mentrestant, la petita amb el retall habitual (16:9 dins del 4:3)
+        return [["https://i.ytimg.com/vi/$id/hqdefault.jpg", 480, 360, [0, 45, 480, 315]]];
+    }
+    $cache[$id] = $out;
     @mkdir(dirname($file), 0755, true);
-    @file_put_contents($file, json_encode($cache), LOCK_EX);
-    return $crop;
+    @file_put_contents($file, json_encode($cache, JSON_UNESCAPED_SLASHES), LOCK_EX);
+    return $out;
 }
 
 function yt_content_box($im): array
@@ -81,7 +95,7 @@ function yt_content_box($im): array
     $box = [$l, $t, $r + 1, $b + 1];
     // Si queda massa petit (imatge gairebé llisa), millor no retallar-la tant
     if (($box[2] - $box[0]) * ($box[3] - $box[1]) < 0.35 * $w * $h) {
-        return YT_DEFAULT_CROP;
+        return $w * 3 === $h * 4 ? [0, (int) ($h / 8), $w, (int) ($h * 7 / 8)] : [0, 0, $w, $h];
     }
     return $box;
 }

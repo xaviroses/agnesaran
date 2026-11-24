@@ -13,13 +13,9 @@ foreach (sheet_rows('videos') as $r) {
         continue;
     }
     // Miniatura de YouTube (si l'enllaç és de YouTube) i la zona sense franges; i.ytimg.com no posa galetes
-    $thumb = '';
-    $crop = null;
-    if (preg_match('~(?:youtu\.be/|[?&]v=|/(?:embed|shorts|live)/)([\w-]{11})~', $url, $m)) {
-        $thumb = "https://i.ytimg.com/vi/{$m[1]}/hqdefault.jpg";
-        $crop = yt_crop($m[1]);
-    }
-    $videos[] = [$cat, $r['titol'] ?? '', $url, $thumb, $crop];
+    $thumbs = preg_match('~(?:youtu\.be/|[?&]v=|/(?:embed|shorts|live)/)([\w-]{11})~', $url, $m)
+        ? yt_thumbs($m[1]) : [];
+    $videos[] = [$cat, $r['titol'] ?? '', $url, $thumbs];
 }
 ?><!doctype html>
 <html lang="ca">
@@ -74,27 +70,39 @@ g.innerHTML='';
 if(!n)return;
 var W=window.innerWidth||1280,H=Math.max((window.innerHeight||800)-184,300);
 var cols=Math.min(n,Math.max(1,Math.round(Math.sqrt(n*(W/H)/(16/9)))));
-var rows=Math.ceil(n/cols),spare=rows*cols-n;
-g.style.gridTemplateColumns='repeat('+cols+',minmax(0,1fr))';
+// Evita que l'última fila tingui un sol vídeo (quedaria una franja molt ampla i pixelada)
+if(cols>1&&n>2&&n%cols===1)cols=(cols+1<=n&&n%(cols+1)!==1)?cols+1:cols-1;
+var rows=Math.ceil(n/cols);
+// L'última fila, si queda incompleta, es reparteix a parts iguals (graella de cols × last subcolumnes)
+var last=n-(rows-1)*cols,sub=last<cols?last:1;
+g.style.gridTemplateColumns='repeat('+(cols*sub)+',minmax(0,1fr))';
 g.style.gridTemplateRows='repeat('+rows+',minmax(0,1fr))';
 list.forEach(function(v,i){
 var a=document.createElement('a');a.href=v[2];a.target='_blank';a.rel='noopener';
 a.setAttribute('aria-label',v[1]);if(v[1])a.title=v[1];
 var fosc=!((i+Math.floor(i/cols))%2);
 a.style.background=fosc?'#EBA096':'#F2AFA5';
-if(i===n-1&&spare>0)a.style.gridColumn='span '+(spare+1);
-if(v[3]){a.className='thumb';a.style.setProperty('--img','url("'+v[3]+'")');a._crop=v[4]}
+a.style.gridColumn='span '+(i>=(rows-1)*cols&&last<cols?cols:sub);
+if(v[3]&&v[3].length){a.className='thumb';a._t=v[3]}
 a.innerHTML='<span>'+icon+'</span>';g.appendChild(a);
 });
-// La miniatura (480×360) porta franges; c = zona amb imatge [esq, dalt, dreta, baix]: s'amplia perquè aquesta zona cobreixi tota la casella
+// Cada miniatura porta franges; t = [url, amplada, alçada, zona amb imatge [esq, dalt, dreta, baix]].
+// S'amplia perquè la zona amb imatge cobreixi tota la casella, i si la petita quedaria pixelada es fa servir la gran.
+var dpr=window.devicePixelRatio||1;
 g.querySelectorAll('a.thumb').forEach(function(a){
+var w=a.offsetWidth,h=a.offsetHeight,ts=a._t,t=ts[0];
+function fit(t){
 // Marge de seguretat: la vora de les franges és borrosa (JPEG); on n'hi havia, se'n treuen uns píxels més
-var c=(a._crop||[0,45,480,315]).slice(),m=3,e=6;
-c[0]+=m+(c[0]>0?e:0);c[1]+=m+(c[1]>0?e:0);c[2]-=m+(c[2]<480?e:0);c[3]-=m+(c[3]<360?e:0);
-var w=a.offsetWidth,h=a.offsetHeight,cw=c[2]-c[0],ch=c[3]-c[1];
-var k=Math.max(w/cw,h/ch),x=c[0]*k-(w-cw*k)/2,y=c[1]*k-(h-ch*k)/2;
-a.style.setProperty('--bs',Math.ceil(480*k)+'px '+Math.ceil(360*k)+'px');
-a.style.setProperty('--bp',(-x).toFixed(1)+'px '+(-y).toFixed(1)+'px');
+var W=t[1],H=t[2],c=t[3].slice(),u=W/480,m=3*u,e=6*u;
+c[0]+=m+(c[0]>0?e:0);c[1]+=m+(c[1]>0?e:0);c[2]-=m+(c[2]<W?e:0);c[3]-=m+(c[3]<H?e:0);
+var cw=c[2]-c[0],ch=c[3]-c[1],k=Math.max(w/cw,h/ch);
+return {k:k,s:Math.ceil(W*k)+'px '+Math.ceil(H*k)+'px',p:(-(c[0]*k-(w-cw*k)/2)).toFixed(1)+'px '+(-(c[1]*k-(h-ch*k)/2)).toFixed(1)+'px'};
+}
+var f=fit(t);
+if(ts[1]&&f.k*dpr>1.3){t=ts[1];f=fit(t)}
+a.style.setProperty('--img','url("'+t[0]+'")');
+a.style.setProperty('--bs',f.s);
+a.style.setProperty('--bp',f.p);
 });
 document.querySelectorAll('.filtres button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.cat===sel))});
 }
