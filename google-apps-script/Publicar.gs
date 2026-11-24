@@ -6,12 +6,15 @@
  *   2. Torna al full i recarrega'l. Apareix el menú "Web".
  *   3. Web → Configurar el token de GitHub (un token "fine-grained" només per al
  *      repositori xaviroses/agnesaran, amb el permís "Contents: Read and write").
- *   4. Web → Activar la publicació automàtica (Google demanarà permisos: accepta'ls).
+ *   4. Web → Activar la publicación automática (Google demanarà permisos: accepta'ls).
+ *
+ * Els textos del menú i dels avisos són en castellà (els veu l'Agnès); els noms de les
+ * funcions no es poden canviar sense tornar a activar la publicació automàtica.
  *
  * FUNCIONAMENT:
  *   - Cada canvi al full queda apuntat.
  *   - Cada 5 minuts, si hi ha hagut canvis, es demana a GitHub que regeneri la web (1–2 min).
- *   - Web → Publicar els canvis ara: publica a l'instant.
+ *   - Web → Publicar los cambios ahora: publica a l'instant.
  *   El token es guarda a les propietats de l'script, mai dins del full.
  */
 
@@ -20,9 +23,9 @@ var REPO = 'xaviroses/agnesaran';
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('Web')
-    .addItem('Publicar els canvis ara', 'publicarAra')
+    .addItem('Publicar los cambios ahora', 'publicarAra')
     .addSeparator()
-    .addItem('Activar la publicació automàtica', 'activarPublicacioAutomatica')
+    .addItem('Activar la publicación automática', 'activarPublicacioAutomatica')
     .addItem('Configurar el token de GitHub', 'configurarToken')
     .addToUi();
 }
@@ -43,8 +46,8 @@ function publicarAra() {
   var ok = enviarAGithub_();
   if (ok) PropertiesService.getScriptProperties().deleteProperty('PENDENT');
   SpreadsheetApp.getUi().alert(ok
-    ? 'Fet! La web s\'actualitzarà en 1 o 2 minuts.'
-    : 'No s\'ha pogut publicar. Avisa en Xavi.');
+    ? '¡Hecho! La web se actualizará en 1 o 2 minutos.'
+    : 'No se ha podido publicar. Avisa a Xavi.');
 }
 
 function activarPublicacioAutomatica() {
@@ -52,15 +55,15 @@ function activarPublicacioAutomatica() {
   ScriptApp.getProjectTriggers().forEach(function (t) { ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('marcarCanvi').forSpreadsheet(ss).onChange().create();
   ScriptApp.newTrigger('publicarSiCal').timeBased().everyMinutes(5).create();
-  SpreadsheetApp.getUi().alert('Publicació automàtica activada: els canvis sortiran a la web en uns minuts.');
+  SpreadsheetApp.getUi().alert('Publicación automática activada: los cambios saldrán en la web en unos minutos.');
 }
 
 function configurarToken() {
   var ui = SpreadsheetApp.getUi();
-  var r = ui.prompt('Token de GitHub', 'Enganxa el token (fine-grained, només per a ' + REPO + '):', ui.ButtonSet.OK_CANCEL);
+  var r = ui.prompt('Token de GitHub', 'Pega el token (fine-grained, solo para ' + REPO + '):', ui.ButtonSet.OK_CANCEL);
   if (r.getSelectedButton() !== ui.Button.OK) return;
   PropertiesService.getScriptProperties().setProperty('GITHUB_TOKEN', r.getResponseText().trim());
-  ui.alert('Token desat.');
+  ui.alert('Token guardado.');
 }
 
 function enviarAGithub_() {
