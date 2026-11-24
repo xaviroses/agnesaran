@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Cuina de casa · Agnès Aran</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php include __DIR__ . '/../inc/head-extra.php'; ?>
+<?php $section_icon = 'cuina'; include __DIR__ . '/../inc/head-extra.php'; ?>
 <meta name="description" content="Cuina de casa per encàrrec a Barcelona: plats per al teu aniversari, tuppers post part, tiramisú… res pro, però tot bo.">
 <link rel="canonical" href="<?= e($cfg['site_url']) ?>/cuina/">
 <meta property="og:image" content="<?= e($cfg['site_url']) ?>/assets/img/cuina/d39a9ca20f3bd9bed2aa8594bc179e9b.jpg">

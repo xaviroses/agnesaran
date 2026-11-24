@@ -38,7 +38,7 @@ $strip = fn(array $files, array $alts) => array_map(null, $files, $alts);
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php include __DIR__ . '/head-extra.php'; ?>
+<?php $section_icon = 'lactancia'; include __DIR__ . '/head-extra.php'; ?>
 <title><?= e($T['title']) ?></title>
 <meta name="description" content="<?= e($T['description']) ?>">
 <link rel="canonical" href="<?= e($cfg['site_url'] . $paths[$lang]) ?>">

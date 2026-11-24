@@ -22,7 +22,7 @@ foreach (sheet_rows('videos') as $r) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php include __DIR__ . '/../inc/head-extra.php'; ?>
+<?php $section_icon = 'veu'; include __DIR__ . '/../inc/head-extra.php'; ?>
 <title>Veu · Agnès Aran</title>
 <meta name="description" content="Agnès Aran, veu: locucions, jingles i música.">
 <link rel="canonical" href="<?= e($cfg['site_url']) ?>/veu/">
@@ -70,22 +70,19 @@ g.innerHTML='';
 if(!n)return;
 var W=window.innerWidth||1280,H=Math.max((window.innerHeight||800)-184,300);
 var cols=Math.min(n,Math.max(1,Math.round(Math.sqrt(n*(W/H)/(16/9)))));
-// Evita que l'última fila tingui un sol vídeo (quedaria una franja molt ampla i pixelada)
-if(cols>1&&n>2&&n%cols===1)cols=(cols+1<=n&&n%(cols+1)!==1)?cols+1:cols-1;
 var rows=Math.ceil(n/cols);
-// L'última fila, si queda incompleta, es reparteix a parts iguals (graella de cols × last subcolumnes)
-var last=n-(rows-1)*cols,sub=last<cols?last:1;
-g.style.gridTemplateColumns='repeat('+(cols*sub)+',minmax(0,1fr))';
+g.style.gridTemplateColumns='repeat('+cols+',minmax(0,1fr))';
 g.style.gridTemplateRows='repeat('+rows+',minmax(0,1fr))';
 list.forEach(function(v,i){
 var a=document.createElement('a');a.href=v[2];a.target='_blank';a.rel='noopener';
 a.setAttribute('aria-label',v[1]);if(v[1])a.title=v[1];
 var fosc=!((i+Math.floor(i/cols))%2);
 a.style.background=fosc?'#EBA096':'#F2AFA5';
-a.style.gridColumn='span '+(i>=(rows-1)*cols&&last<cols?cols:sub);
 if(v[3]&&v[3].length){a.className='thumb';a._t=v[3]}
 a.innerHTML='<span>'+icon+'</span>';g.appendChild(a);
 });
+// Les caselles que sobren a l'última fila es queden buides, en rosa (seguint l'arlequinat)
+for(var i=n;i<rows*cols;i++){var d=document.createElement('div');d.setAttribute('aria-hidden','true');d.style.background=((i+Math.floor(i/cols))%2)?'#F2AFA5':'#EBA096';g.appendChild(d)}
 // Cada miniatura porta franges; t = [url, amplada, alçada, zona amb imatge [esq, dalt, dreta, baix]].
 // S'amplia perquè la zona amb imatge cobreixi tota la casella, i si la petita quedaria pixelada es fa servir la gran.
 var dpr=window.devicePixelRatio||1;
