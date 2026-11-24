@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../inc/sheet.php';
+require_once __DIR__ . '/../inc/yt-thumbs.php';
 $cfg = site_config();
 
 // Vídeos del full "videos": categoria (locucions | jingles | musica), titol, url
@@ -11,10 +12,14 @@ foreach (sheet_rows('videos') as $r) {
     if (!$cat || !preg_match('~^https?://~', $url)) {
         continue;
     }
-    // Miniatura de YouTube (si l'enllaç és de YouTube): i.ytimg.com no posa galetes
-    $thumb = preg_match('~(?:youtu\.be/|[?&]v=|/(?:embed|shorts|live)/)([\w-]{11})~', $url, $m)
-        ? "https://i.ytimg.com/vi/{$m[1]}/hqdefault.jpg" : '';
-    $videos[] = [$cat, $r['titol'] ?? '', $url, $thumb];
+    // Miniatura de YouTube (si l'enllaç és de YouTube) i la zona sense franges; i.ytimg.com no posa galetes
+    $thumb = '';
+    $crop = null;
+    if (preg_match('~(?:youtu\.be/|[?&]v=|/(?:embed|shorts|live)/)([\w-]{11})~', $url, $m)) {
+        $thumb = "https://i.ytimg.com/vi/{$m[1]}/hqdefault.jpg";
+        $crop = yt_crop($m[1]);
+    }
+    $videos[] = [$cat, $r['titol'] ?? '', $url, $thumb, $crop];
 }
 ?><!doctype html>
 <html lang="ca">
@@ -38,10 +43,12 @@ nav{flex:none;display:flex;justify-content:center;padding:24px 16px}
 #graella{flex:1;min-height:0;display:grid;gap:0}
 #graella a{min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;text-decoration:none;color:#A3483D}
 #graella a{position:relative;overflow:hidden}
-#graella a.thumb::before{content:"";position:absolute;inset:0;background:var(--img) center/var(--bs,cover) no-repeat;transition:transform .4s}
-#graella a.thumb::after{content:"";position:absolute;inset:0;background:rgba(163,72,61,.25);transition:background .3s}
+#graella a.thumb::before{content:"";position:absolute;inset:0;background:var(--img) var(--bp,center)/var(--bs,cover) no-repeat;transition:transform .4s}
+/* Capa negra molt subtil en escacs (com l'arlequinat de colors de les caselles buides) */
+#graella a.thumb::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.14);transition:background .3s}
+#graella a.thumb.fosc::after{background:rgba(0,0,0,.24)}
 #graella a.thumb:hover::before,#graella a.thumb:focus-visible::before{transform:scale(1.04)}
-#graella a.thumb:hover::after,#graella a.thumb:focus-visible::after{background:rgba(163,72,61,.05)}
+#graella a.thumb:hover::after,#graella a.thumb:focus-visible::after{background:rgba(0,0,0,.04)}
 #graella a.thumb span{position:relative;z-index:1;filter:drop-shadow(0 1px 4px rgba(0,0,0,.45))}
 #graella a.thumb svg{stroke:#fff;stroke-width:1}
 #graella a span{display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px;transition:transform .2s}
@@ -77,13 +84,19 @@ g.style.gridTemplateRows='repeat('+rows+',minmax(0,1fr))';
 list.forEach(function(v,i){
 var a=document.createElement('a');a.href=v[2];a.target='_blank';a.rel='noopener';
 a.setAttribute('aria-label',v[1]);if(v[1])a.title=v[1];
-a.style.background=((i+Math.floor(i/cols))%2)?'#F2AFA5':'#EBA096';
+var fosc=!((i+Math.floor(i/cols))%2);
+a.style.background=fosc?'#EBA096':'#F2AFA5';
 if(i===n-1&&spare>0)a.style.gridColumn='span '+(spare+1);
-if(v[3]){a.className='thumb';a.style.setProperty('--img','url("'+v[3]+'")')}
+if(v[3]){a.className='thumb'+(fosc?' fosc':'');a.style.setProperty('--img','url("'+v[3]+'")');a._crop=v[4]}
 a.innerHTML='<span>'+icon+'</span>';g.appendChild(a);
 });
-// hqdefault és 4:3 amb franges negres a dalt i a baix: la mida fa que el 16:9 del mig cobreixi la casella
-g.querySelectorAll('a.thumb').forEach(function(a){var w=a.offsetWidth,h=a.offsetHeight;a.style.setProperty('--bs',Math.ceil(Math.max(w,h*16/9))+'px auto')});
+// La miniatura (480×360) porta franges; c = zona amb imatge [esq, dalt, dreta, baix]: s'amplia perquè aquesta zona cobreixi tota la casella
+g.querySelectorAll('a.thumb').forEach(function(a){
+var c=a._crop||[0,45,480,315],w=a.offsetWidth,h=a.offsetHeight,cw=c[2]-c[0],ch=c[3]-c[1];
+var k=Math.max(w/cw,h/ch),x=c[0]*k-(w-cw*k)/2,y=c[1]*k-(h-ch*k)/2;
+a.style.setProperty('--bs',Math.ceil(480*k)+'px '+Math.ceil(360*k)+'px');
+a.style.setProperty('--bp',(-x).toFixed(1)+'px '+(-y).toFixed(1)+'px');
+});
 document.querySelectorAll('.filtres button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.cat===sel))});
 }
 document.querySelectorAll('.filtres button').forEach(function(b){b.addEventListener('click',function(){sel=sel===b.dataset.cat?null:b.dataset.cat;render()})});

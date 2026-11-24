@@ -8,3 +8,4 @@ _originals/
 agnesaran-continguts.xlsx
 .claude/
 .DS_Store
+public/cache/*.json
