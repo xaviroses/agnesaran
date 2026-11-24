@@ -61,7 +61,11 @@ foreach ($assets as $f) {
     copy($f->getPathname(), "$dist/$rel");
     $n++;
 }
-echo "✓ $n fitxers d'assets\n";
+foreach (['favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'icon-512.png'] as $f) {
+    copy("$src/$f", "$dist/$f");
+    $n++;
+}
+echo "✓ $n fitxers d'assets i icones\n";
 
 // Fitxers per a GitHub Pages
 touch("$dist/.nojekyll");

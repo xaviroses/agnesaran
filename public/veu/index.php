@@ -18,6 +18,7 @@ foreach (sheet_rows('videos') as $r) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<?php include __DIR__ . '/../inc/head-extra.php'; ?>
 <title>Veu · Agnès Aran</title>
 <meta name="description" content="Agnès Aran, veu: locucions, jingles i música.">
 <link rel="canonical" href="<?= e($cfg['site_url']) ?>/veu/">

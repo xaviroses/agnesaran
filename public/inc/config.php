@@ -19,6 +19,10 @@ return [
     // Segons que es guarda la còpia del full abans de tornar-lo a llegir de Google.
     'cache_ttl' => 300,
 
+    // ID del lloc a CookieYes (el tros de l'URL del script: cdn-cookieyes.com/client_data/<ID>/script.js).
+    // Buit = no es mostra cap banner.
+    'cookieyes_id' => '',
+
     'whatsapp' => '34651453340',
     'site_url' => 'https://agnesaran.com',
 ];
