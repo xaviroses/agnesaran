@@ -1,0 +1,10 @@
+# Generat
+dist/
+public/cache/*.csv
+
+# Privat / local
+NOTES.private.md
+_originals/
+agnesaran-continguts.xlsx
+.claude/
+.DS_Store

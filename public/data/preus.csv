@@ -1,0 +1,10 @@
+visible,grup_ca,grup_es,grup_en,concepte_ca,concepte_es,concepte_en,preu
+si,Visites,Visitas,Visits,Visita a domicili (Barcelona),Visita a domicilio (Barcelona),Home visit (Barcelona),70€
+si,,,,Visita a l'hospital (Barcelona),Visita en el hospital (Barcelona),Hospital visit (Barcelona),70€
+si,,,,Visita a la [Farmàcia Mandri 54](https://www.google.com/maps/search/?api=1&query=Farm%C3%A0cia%20Mandri%2054%2C%20Carrer%20de%20Mandri%2054%2C%20Barcelona),Visita en la [Farmàcia Mandri 54](https://www.google.com/maps/search/?api=1&query=Farm%C3%A0cia%20Mandri%2054%2C%20Carrer%20de%20Mandri%2054%2C%20Barcelona),Visit at [Farmàcia Mandri 54](https://www.google.com/maps/search/?api=1&query=Farm%C3%A0cia%20Mandri%2054%2C%20Carrer%20de%20Mandri%2054%2C%20Barcelona),70€
+si,,,,Visita a [Creix amb Traça](https://www.google.com/maps/search/?api=1&query=Creix%20amb%20Tra%C3%A7a%2C%20Carrer%20d%27Alacant%2032%2C%20Barcelona),Visita en [Creix amb Traça](https://www.google.com/maps/search/?api=1&query=Creix%20amb%20Tra%C3%A7a%2C%20Carrer%20d%27Alacant%2032%2C%20Barcelona),Visit at [Creix amb Traça](https://www.google.com/maps/search/?api=1&query=Creix%20amb%20Tra%C3%A7a%2C%20Carrer%20d%27Alacant%2032%2C%20Barcelona),70€
+si,,,,Visita online,Visita online,Online visit,60€
+si,,,,Taller de lactància particular a domicili,Taller de lactancia particular a domicilio,Private breastfeeding workshop at home,140€
+si,Packs domicili,Packs a domicilio,Home visit packs,2 visites,2 visitas,2 visits,130€
+si,,,,3 visites,3 visitas,3 visits,190€
+si,,,,5 visites,5 visitas,5 visits,300€

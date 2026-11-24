@@ -1,0 +1,17 @@
+DirectoryIndex index.php index.html
+Options -Indexes
+
+# Fitxers interns no accessibles des del web
+<FilesMatch "\.(csv|md|sh)$">
+  Require all denied
+</FilesMatch>
+
+# Memòria cau del navegador per a imatges, CSS i JS
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/gif "access plus 1 month"
+  ExpiresByType text/css "access plus 1 week"
+  ExpiresByType application/javascript "access plus 1 week"
+</IfModule>

@@ -1,0 +1,63 @@
+# Genera la web estàtica (plantilles PHP + Google Sheet) i la publica a GitHub Pages.
+#
+# S'executa:
+#   - en cada push a main (canvis de codi o disseny)
+#   - quan el Google Sheet avisa que hi ha canvis (Apps Script → repository_dispatch "sheet-updated")
+#   - cada hora, com a xarxa de seguretat
+#   - a mà, des de la pestanya Actions (botó "Run workflow")
+#
+# Variables del repositori (Settings → Secrets and variables → Actions → Variables):
+#   CNAME      → agnesaran.com           (quan el domini apunti a GitHub)
+#   BASE_PATH  → /agnesaran              (només mentre es vegi a xaviroses.github.io/agnesaran)
+
+name: Publicar web
+
+on:
+  push:
+    branches: [main]
+  repository_dispatch:
+    types: [sheet-updated]
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: curl, mbstring
+
+      - name: Generar la web
+        env:
+          BUILD_STRICT: "1"
+          BASE_PATH: ${{ vars.BASE_PATH }}
+          CNAME: ${{ vars.CNAME }}
+        run: php build.php
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
