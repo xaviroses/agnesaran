@@ -155,8 +155,13 @@ function norm_key(string $s): string
 /** Agafa el valor en l'idioma demanat; si és buit, fa servir el català. */
 function tr(array $row, string $field, string $lang): string
 {
-    $v = $row["{$field}_{$lang}"] ?? '';
-    return $v !== '' ? $v : ($row["{$field}_ca"] ?? '');
+    // Ordre: columna de l'idioma (titol_es) → columna única sense idioma (data_text) → català
+    foreach (["{$field}_{$lang}", $field, "{$field}_ca"] as $col) {
+        if (($row[$col] ?? '') !== '') {
+            return $row[$col];
+        }
+    }
+    return '';
 }
 
 /**

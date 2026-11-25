@@ -60,7 +60,7 @@ Un sol full de càlcul amb 4 pestanyes, més una pestanya d'instruccions. El nom
 
 | Pestanya | Columnes | On surt |
 |---|---|---|
-| `tallers` | visible, data, data_text_ca/es/en, titol_ca/es/en, lloc, adreca, preu, enllac | Lactància → Propers tallers |
+| `tallers` | visible, data, data_text, titol_ca/es/en, lloc, adreca, preu, enllac | Lactància → Propers tallers |
 | `preus` | visible, grup_ca/es/en, concepte_ca/es/en, preu | Lactància → Preus |
 | `formacio` | visible, grup_ca/es/en, anys, text_ca/es/en | Lactància → Experiència i formació |
 | `videos` | visible, categoria, titol, url | Veu |
